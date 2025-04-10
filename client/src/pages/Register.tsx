@@ -64,6 +64,7 @@ export default function Register() {
           <form onSubmit={handleSubmit} className="space-y-4">
             <div>
               <Input
+                name="username"
                 type="text"
                 placeholder="Username"
                 required
@@ -72,6 +73,7 @@ export default function Register() {
             </div>
             <div>
               <Input
+                name="email"
                 type="email"
                 placeholder="Email"
                 required
@@ -80,6 +82,7 @@ export default function Register() {
             </div>
             <div>
               <Input
+                name="password"
                 type="password"
                 placeholder="Password"
                 required
