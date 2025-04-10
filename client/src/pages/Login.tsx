@@ -66,6 +66,8 @@ export default function Login() {
                 name="username"
                 type="text" 
                 placeholder="Username"
+                defaultValue=""
+                onChange={(e) => setUsername(e.target.value)}
                 required
                 className="w-full bg-gray-800 border-gray-700"
               />
@@ -75,6 +77,8 @@ export default function Login() {
                 name="password"
                 type="password"
                 placeholder="Password" 
+                defaultValue=""
+                onChange={(e) => setPassword(e.target.value)}
                 required
                 className="w-full bg-gray-800 border-gray-700"
               />
