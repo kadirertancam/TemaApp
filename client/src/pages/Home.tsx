@@ -4,12 +4,20 @@ import BottomNavigation from "@/components/layout/BottomNavigation";
 import FeaturedThemeCarousel from "@/components/themes/FeaturedThemeCarousel";
 import ThemeCard from "@/components/themes/ThemeCard";
 import ThemeListItem from "@/components/themes/ThemeListItem";
+import WhatsNewDialog from "@/components/layout/WhatsNewDialog";
+import FloatingActionButton from "@/components/ui/floating-action-button";
 import { useCategories, useFeaturedThemes, useTrendingThemes, useNewReleases, useTopRatedThemes, useFilteredThemes } from "@/hooks/use-themes";
 import { Skeleton } from "@/components/ui/skeleton";
+import { FilterOptions } from "@/components/themes/ThemeFilterMenu";
+import { useToast } from "@/hooks/use-toast";
+import { useLocation } from "wouter";
 
 export default function Home() {
   const [selectedCategory, setSelectedCategory] = useState(1); // Default to "All" category
   const [searchQuery, setSearchQuery] = useState("");
+  const [whatsNewOpen, setWhatsNewOpen] = useState(false);
+  const { toast } = useToast();
+  const [_, setLocation] = useLocation();
   
   // Fetch data
   const { data: categories = [], isLoading: categoriesLoading } = useCategories();
@@ -31,6 +39,47 @@ export default function Home() {
     setSearchQuery(query);
   };
   
+  const handleFilter = (filters: FilterOptions) => {
+    toast({
+      title: "Filters applied",
+      description: `Showing ${filters.onlyFree ? 'free' : 'all'} themes, sorted by ${filters.sortBy}`,
+    });
+  };
+  
+  // FAB actions
+  const fabItems = [
+    {
+      icon: "fas fa-filter",
+      label: "Filter",
+      color: "bg-indigo-700",
+      onClick: () => {
+        // This would normally show the filter menu
+        toast({
+          title: "Filter themes",
+          description: "Filter dialog would open here.",
+        });
+      }
+    },
+    {
+      icon: "fas fa-th-large",
+      label: "Categories",
+      color: "bg-pink-700",
+      onClick: () => setLocation("/categories")
+    },
+    {
+      icon: "fas fa-star",
+      label: "Top Rated",
+      color: "bg-amber-700",
+      onClick: () => setLocation("/top-rated")
+    },
+    {
+      icon: "fas fa-bell",
+      label: "What's New",
+      color: "bg-purple-700",
+      onClick: () => setWhatsNewOpen(true)
+    }
+  ];
+  
   // Content based on filters
   const displayedThemes = searchQuery ? filteredThemes : null;
   
@@ -41,6 +90,7 @@ export default function Home() {
         currentCategory={selectedCategory}
         onCategoryChange={handleCategoryChange}
         onSearch={handleSearch}
+        onFilter={handleFilter}
       />
       
       <main className="pt-36 pb-20 px-4">
@@ -173,6 +223,8 @@ export default function Home() {
         )}
       </main>
       
+      <FloatingActionButton items={fabItems} />
+      <WhatsNewDialog open={whatsNewOpen} onOpenChange={setWhatsNewOpen} />
       <BottomNavigation />
     </div>
   );

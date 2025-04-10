@@ -28,8 +28,7 @@ export function ThemeCard({
     setLocation(`/theme/${theme.id}`);
   };
   
-  const handleAddToFavorites = (e: React.MouseEvent) => {
-    e.stopPropagation();
+  const handleAddToFavorites = () => {
     toast({
       title: "Added to favorites",
       description: `${theme.name} has been added to your favorites.`,

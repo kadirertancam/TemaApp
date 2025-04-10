@@ -158,9 +158,9 @@ export default function ThemeDetails() {
           <StarRating rating={theme.rating} count={theme.ratingCount} />
           <span className="text-gray-400 text-xs ml-3">
             <i className="fas fa-download mr-1"></i>
-            {theme.downloadCount > 1000 
-              ? `${(theme.downloadCount / 1000).toFixed(1)}k` 
-              : theme.downloadCount} downloads
+            {theme.ratingCount > 1000 
+              ? `${(theme.ratingCount / 1000).toFixed(1)}k` 
+              : theme.ratingCount} downloads
           </span>
         </div>
         
@@ -182,15 +182,15 @@ export default function ThemeDetails() {
                 </div>
                 <div className="bg-gray-800 p-3 rounded-lg">
                   <p className="text-xs text-gray-400">Version</p>
-                  <p className="text-sm font-medium">{theme.version || "1.0.0"}</p>
+                  <p className="text-sm font-medium">1.0.0</p>
                 </div>
                 <div className="bg-gray-800 p-3 rounded-lg">
                   <p className="text-xs text-gray-400">Size</p>
-                  <p className="text-sm font-medium">{theme.fileSize || "12.5 MB"}</p>
+                  <p className="text-sm font-medium">12.5 MB</p>
                 </div>
                 <div className="bg-gray-800 p-3 rounded-lg">
                   <p className="text-xs text-gray-400">Style</p>
-                  <p className="text-sm font-medium">{theme.style || "Modern"}</p>
+                  <p className="text-sm font-medium">Modern</p>
                 </div>
               </div>
             </div>
