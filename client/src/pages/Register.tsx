@@ -9,9 +9,12 @@ export default function Register() {
   const [_, setLocation] = useLocation();
   const { toast } = useToast();
 
+  const [username, setUsername] = React.useState('');
+  const [email, setEmail] = React.useState('');
+  const [password, setPassword] = React.useState('');
+
   const handleSubmit = async (e: React.FormEvent<HTMLFormElement>) => {
     e.preventDefault();
-    const formData = new FormData(e.currentTarget);
     
     try {
       const response = await fetch('/api/auth/register', {
@@ -20,9 +23,9 @@ export default function Register() {
           'Content-Type': 'application/json',
         },
         body: JSON.stringify({
-          username: formData.get('username'),
-          email: formData.get('email'),
-          password: formData.get('password'),
+          username,
+          email,
+          password,
         }),
       });
 
@@ -67,6 +70,8 @@ export default function Register() {
                 name="username"
                 type="text"
                 placeholder="Username"
+                value={username}
+                onChange={(e) => setUsername(e.target.value)}
                 required
                 className="w-full bg-gray-800 border-gray-700"
               />
@@ -76,6 +81,8 @@ export default function Register() {
                 name="email"
                 type="email"
                 placeholder="Email"
+                value={email}
+                onChange={(e) => setEmail(e.target.value)}
                 required
                 className="w-full bg-gray-800 border-gray-700"
               />
@@ -85,6 +92,8 @@ export default function Register() {
                 name="password"
                 type="password"
                 placeholder="Password"
+                value={password}
+                onChange={(e) => setPassword(e.target.value)}
                 required
                 className="w-full bg-gray-800 border-gray-700"
               />
