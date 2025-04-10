@@ -14,7 +14,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
         return res.status(400).json({ message: "Username already exists" });
       }
 
-      const bcrypt = require('bcrypt');
+      import bcrypt from 'bcrypt';
       const hashedPassword = await bcrypt.hash(password, 10);
       
       const user = await storage.createUser({ username, email, password: hashedPassword });
