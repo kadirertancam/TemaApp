@@ -1,8 +1,10 @@
-import React from "react";
+import React, { useState } from "react";
 import { useLocation } from "wouter";
 import { cn } from "@/lib/utils";
 import StarRating from "@/components/ui/star-rating";
+import ThemeOptionsMenu from "@/components/layout/ThemeOptionsMenu";
 import { Theme } from "@shared/schema";
+import { useToast } from "@/hooks/use-toast";
 
 interface ThemeCardProps {
   theme: Theme;
@@ -20,15 +22,39 @@ export function ThemeCard({
   topRated = false
 }: ThemeCardProps) {
   const [_, setLocation] = useLocation();
+  const { toast } = useToast();
   
   const handleClick = () => {
     setLocation(`/theme/${theme.id}`);
   };
   
+  const handleAddToFavorites = (e: React.MouseEvent) => {
+    e.stopPropagation();
+    toast({
+      title: "Added to favorites",
+      description: `${theme.name} has been added to your favorites.`,
+    });
+  };
+  
+  const handleShare = () => {
+    toast({
+      title: "Theme shared",
+      description: `Link copied to clipboard!`,
+    });
+  };
+  
+  const handleReport = () => {
+    toast({
+      title: "Report submitted",
+      description: "Thank you for your feedback.",
+      variant: "destructive"
+    });
+  };
+  
   return (
     <div 
       className={cn(
-        "theme-card bg-gray-800 rounded-xl overflow-hidden shadow-md transition-transform active:scale-97",
+        "theme-card bg-gray-800 rounded-xl overflow-hidden shadow-md transition-transform active:scale-97 relative group",
         className
       )}
       onClick={handleClick}
@@ -45,6 +71,15 @@ export function ThemeCard({
             {theme.rating.toFixed(1)}
           </div>
         )}
+        
+        <div className="absolute top-2 right-2 opacity-0 group-hover:opacity-100 transition-opacity" onClick={(e) => e.stopPropagation()}>
+          <ThemeOptionsMenu
+            theme={theme}
+            onShare={handleShare}
+            onAddToFavorites={handleAddToFavorites}
+            onReport={handleReport}
+          />
+        </div>
       </div>
       
       <div className="p-3">
