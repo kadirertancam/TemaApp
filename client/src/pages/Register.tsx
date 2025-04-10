@@ -9,14 +9,40 @@ export default function Register() {
   const [_, setLocation] = useLocation();
   const { toast } = useToast();
 
-  const handleSubmit = (e: React.FormEvent) => {
+  const handleSubmit = async (e: React.FormEvent<HTMLFormElement>) => {
     e.preventDefault();
-    // TODO: Implement actual registration logic
-    toast({
-      title: "Registration successful",
-      description: "Welcome to ThemeHub!",
-    });
-    setLocation("/profile");
+    const formData = new FormData(e.currentTarget);
+    
+    try {
+      const response = await fetch('/api/auth/register', {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+        },
+        body: JSON.stringify({
+          username: formData.get('username'),
+          email: formData.get('email'),
+          password: formData.get('password'),
+        }),
+      });
+
+      if (!response.ok) {
+        const error = await response.json();
+        throw new Error(error.message);
+      }
+
+      toast({
+        title: "Registration successful",
+        description: "Welcome to ThemeHub!",
+      });
+      setLocation("/login");
+    } catch (error) {
+      toast({
+        title: "Registration failed",
+        description: error instanceof Error ? error.message : "Please try again",
+        variant: "destructive",
+      });
+    }
   };
 
   return (

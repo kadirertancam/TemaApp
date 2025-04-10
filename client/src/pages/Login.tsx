@@ -9,14 +9,39 @@ export default function Login() {
   const [_, setLocation] = useLocation();
   const { toast } = useToast();
 
-  const handleSubmit = (e: React.FormEvent) => {
+  const handleSubmit = async (e: React.FormEvent<HTMLFormElement>) => {
     e.preventDefault();
-    // TODO: Implement actual login logic
-    toast({
-      title: "Login successful",
-      description: "Welcome back!",
-    });
-    setLocation("/profile");
+    const formData = new FormData(e.currentTarget);
+    
+    try {
+      const response = await fetch('/api/auth/login', {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+        },
+        body: JSON.stringify({
+          username: formData.get('username'),
+          password: formData.get('password'),
+        }),
+      });
+
+      if (!response.ok) {
+        const error = await response.json();
+        throw new Error(error.message);
+      }
+
+      toast({
+        title: "Login successful",
+        description: "Welcome back!",
+      });
+      setLocation("/profile");
+    } catch (error) {
+      toast({
+        title: "Login failed",
+        description: error instanceof Error ? error.message : "Invalid credentials",
+        variant: "destructive",
+      });
+    }
   };
 
   return (
