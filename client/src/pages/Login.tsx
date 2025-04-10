@@ -63,16 +63,18 @@ export default function Login() {
           <form onSubmit={handleSubmit} className="space-y-4">
             <div>
               <Input
-                type="email"
-                placeholder="Email"
+                name="username"
+                type="text" 
+                placeholder="Username"
                 required
                 className="w-full bg-gray-800 border-gray-700"
               />
             </div>
             <div>
               <Input
+                name="password"
                 type="password"
-                placeholder="Password"
+                placeholder="Password" 
                 required
                 className="w-full bg-gray-800 border-gray-700"
               />
