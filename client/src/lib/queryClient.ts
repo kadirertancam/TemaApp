@@ -19,7 +19,10 @@ export async function apiRequest(
     credentials: "include",
   });
 
-  await throwIfResNotOk(res);
+  // Don't throw for 401 responses, let the caller handle them
+  if (!res.ok && res.status !== 401) {
+    await throwIfResNotOk(res);
+  }
   return res;
 }
 

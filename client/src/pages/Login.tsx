@@ -1,46 +1,29 @@
-
-import React from "react";
+import React, { useState, useEffect } from "react";
 import { useLocation } from "wouter";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
-import { useToast } from "@/hooks/use-toast";
+import { useAuth } from "@/hooks/use-auth";
 
 export default function Login() {
   const [_, setLocation] = useLocation();
-  const { toast } = useToast();
+  const { login, isLoggedIn, isLoading } = useAuth();
+
+  const [username, setUsername] = useState('');
+  const [password, setPassword] = useState('');
+  
+  // Redirect if already logged in
+  useEffect(() => {
+    if (isLoggedIn) {
+      setLocation('/profile');
+    }
+  }, [isLoggedIn, setLocation]);
 
   const handleSubmit = async (e: React.FormEvent<HTMLFormElement>) => {
     e.preventDefault();
-    const formData = new FormData(e.currentTarget);
     
-    try {
-      const response = await fetch('/api/auth/login', {
-        method: 'POST',
-        headers: {
-          'Content-Type': 'application/json',
-        },
-        body: JSON.stringify({
-          username: formData.get('username'),
-          password: formData.get('password'),
-        }),
-      });
-
-      if (!response.ok) {
-        const error = await response.json();
-        throw new Error(error.message);
-      }
-
-      toast({
-        title: "Login successful",
-        description: "Welcome back!",
-      });
-      setLocation("/profile");
-    } catch (error) {
-      toast({
-        title: "Login failed",
-        description: error instanceof Error ? error.message : "Invalid credentials",
-        variant: "destructive",
-      });
+    const success = await login(username, password);
+    if (success) {
+      setLocation('/profile');
     }
   };
 
@@ -65,8 +48,8 @@ export default function Login() {
               <Input
                 name="username"
                 type="text" 
-                placeholder="Username"
-                defaultValue=""
+                placeholder="Username or Email"
+                value={username}
                 onChange={(e) => setUsername(e.target.value)}
                 required
                 className="w-full bg-gray-800 border-gray-700"
@@ -77,14 +60,25 @@ export default function Login() {
                 name="password"
                 type="password"
                 placeholder="Password" 
-                defaultValue=""
+                value={password}
                 onChange={(e) => setPassword(e.target.value)}
                 required
                 className="w-full bg-gray-800 border-gray-700"
               />
             </div>
-            <Button className="w-full bg-purple-700 hover:bg-purple-600" type="submit">
-              Sign In
+            <Button 
+              className="w-full bg-purple-700 hover:bg-purple-600" 
+              type="submit"
+              disabled={isLoading}
+            >
+              {isLoading ? (
+                <>
+                  <i className="fas fa-circle-notch fa-spin mr-2"></i>
+                  Signing in...
+                </>
+              ) : (
+                "Sign In"
+              )}
             </Button>
           </form>
 

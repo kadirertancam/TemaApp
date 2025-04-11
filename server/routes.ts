@@ -21,6 +21,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
       res.json({ user });
     } catch (error) {
       console.error("Error registering user:", error);
+      console.log("Request body:", req.body);
       res.status(500).json({ message: "Failed to register user" });
     }
   });
@@ -28,7 +29,16 @@ export async function registerRoutes(app: Express): Promise<Server> {
   app.post("/api/auth/login", async (req, res) => {
     try {
       const { username, password } = req.body;
-      const user = await storage.getUserByUsername(username);
+      
+      // First try to find user by username
+      let user = await storage.getUserByUsername(username);
+      
+      // If not found, try by email
+      if (!user && username.includes('@')) {
+        // Check if it's an email by simple validation
+        const users = await storage.getAllUsers();
+        user = users.find(u => u.email === username);
+      }
       
       if (!user) {
         return res.status(401).json({ message: "Invalid credentials" });
@@ -41,10 +51,45 @@ export async function registerRoutes(app: Express): Promise<Server> {
         return res.status(401).json({ message: "Invalid credentials" });
       }
       
-      res.json({ user });
+      // Store userId in session cookie
+      res.cookie('userId', user.id, {
+        httpOnly: true,
+        maxAge: 7 * 24 * 60 * 60 * 1000, // 7 days
+        sameSite: 'strict',
+        path: '/'
+      });
+      
+      // Return user without password
+      const { password: _, ...safeUser } = user;
+      res.json({ user: safeUser });
     } catch (error) {
       console.error("Error logging in:", error);
+      console.log("Login attempt with:", { username: req.body.username });
       res.status(500).json({ message: "Failed to login" });
+    }
+  });
+
+  // Add logout endpoint
+  app.post("/api/auth/logout", (req, res) => {
+    res.clearCookie('userId');
+    res.json({ success: true });
+  });
+
+  // DEBUG: Get registered users (FOR DEVELOPMENT ONLY)
+  app.get("/api/debug/users", async (_req, res) => {
+    try {
+      const users = await storage.getAllUsers();
+      // Send users but hide sensitive info
+      const safeUsers = users.map(user => ({
+        id: user.id,
+        username: user.username,
+        email: user.email,
+        createdAt: user.createdAt
+      }));
+      res.json(safeUsers);
+    } catch (error) {
+      console.error("Error fetching users:", error);
+      res.status(500).json({ message: "Failed to fetch users" });
     }
   });
 

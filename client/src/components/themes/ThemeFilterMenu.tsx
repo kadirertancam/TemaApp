@@ -11,7 +11,7 @@ interface ThemeFilterMenuProps {
 }
 
 export interface FilterOptions {
-  sortBy: "popularity" | "newest" | "rating" | "priceAsc" | "priceDesc";
+  sortBy: "relevance" | "popularity" | "newest" | "rating" | "downloads" | "price-low" | "price-high";
   priceRange: [number, number];
   onlyFree: boolean;
   colorScheme: "any" | "dark" | "light" | "colorful";
@@ -20,7 +20,7 @@ export interface FilterOptions {
 export function ThemeFilterMenu({ onApplyFilters }: ThemeFilterMenuProps) {
   const [isOpen, setIsOpen] = useState(false);
   const [filters, setFilters] = useState<FilterOptions>({
-    sortBy: "popularity",
+    sortBy: "relevance",
     priceRange: [0, 10],
     onlyFree: false,
     colorScheme: "any"
@@ -61,7 +61,7 @@ export function ThemeFilterMenu({ onApplyFilters }: ThemeFilterMenuProps) {
   
   const handleReset = () => {
     const defaultFilters = {
-      sortBy: "popularity" as const,
+      sortBy: "relevance" as const,
       priceRange: [0, 10] as [number, number],
       onlyFree: false,
       colorScheme: "any" as const
@@ -105,8 +105,16 @@ export function ThemeFilterMenu({ onApplyFilters }: ThemeFilterMenuProps) {
               className="space-y-2"
             >
               <div className="flex items-center space-x-2">
+                <RadioGroupItem value="relevance" id="relevance" className="border-gray-600 text-purple-600" />
+                <Label htmlFor="relevance" className="text-white cursor-pointer">Relevance</Label>
+              </div>
+              <div className="flex items-center space-x-2">
                 <RadioGroupItem value="popularity" id="popularity" className="border-gray-600 text-purple-600" />
                 <Label htmlFor="popularity" className="text-white cursor-pointer">Most Popular</Label>
+              </div>
+              <div className="flex items-center space-x-2">
+                <RadioGroupItem value="downloads" id="downloads" className="border-gray-600 text-purple-600" />
+                <Label htmlFor="downloads" className="text-white cursor-pointer">Most Downloaded</Label>
               </div>
               <div className="flex items-center space-x-2">
                 <RadioGroupItem value="newest" id="newest" className="border-gray-600 text-purple-600" />
@@ -117,12 +125,12 @@ export function ThemeFilterMenu({ onApplyFilters }: ThemeFilterMenuProps) {
                 <Label htmlFor="rating" className="text-white cursor-pointer">Highest Rated</Label>
               </div>
               <div className="flex items-center space-x-2">
-                <RadioGroupItem value="priceAsc" id="priceAsc" className="border-gray-600 text-purple-600" />
-                <Label htmlFor="priceAsc" className="text-white cursor-pointer">Price: Low to High</Label>
+                <RadioGroupItem value="price-low" id="price-low" className="border-gray-600 text-purple-600" />
+                <Label htmlFor="price-low" className="text-white cursor-pointer">Price: Low to High</Label>
               </div>
               <div className="flex items-center space-x-2">
-                <RadioGroupItem value="priceDesc" id="priceDesc" className="border-gray-600 text-purple-600" />
-                <Label htmlFor="priceDesc" className="text-white cursor-pointer">Price: High to Low</Label>
+                <RadioGroupItem value="price-high" id="price-high" className="border-gray-600 text-purple-600" />
+                <Label htmlFor="price-high" className="text-white cursor-pointer">Price: High to Low</Label>
               </div>
             </RadioGroup>
           </div>

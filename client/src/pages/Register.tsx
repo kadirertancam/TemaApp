@@ -1,50 +1,30 @@
-
-import React from "react";
+import React, { useState, useEffect } from "react";
 import { useLocation } from "wouter";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
-import { useToast } from "@/hooks/use-toast";
+import { useAuth } from "@/hooks/use-auth";
 
 export default function Register() {
   const [_, setLocation] = useLocation();
-  const { toast } = useToast();
+  const { register, isLoggedIn, isLoading } = useAuth();
 
-  const [username, setUsername] = React.useState('');
-  const [email, setEmail] = React.useState('');
-  const [password, setPassword] = React.useState('');
+  const [username, setUsername] = useState('');
+  const [email, setEmail] = useState('');
+  const [password, setPassword] = useState('');
+  
+  // Redirect if already logged in
+  useEffect(() => {
+    if (isLoggedIn) {
+      setLocation('/profile');
+    }
+  }, [isLoggedIn, setLocation]);
 
   const handleSubmit = async (e: React.FormEvent<HTMLFormElement>) => {
     e.preventDefault();
     
-    try {
-      const response = await fetch('/api/auth/register', {
-        method: 'POST',
-        headers: {
-          'Content-Type': 'application/json',
-        },
-        body: JSON.stringify({
-          username,
-          email,
-          password,
-        }),
-      });
-
-      if (!response.ok) {
-        const error = await response.json();
-        throw new Error(error.message);
-      }
-
-      toast({
-        title: "Registration successful",
-        description: "Welcome to ThemeHub!",
-      });
+    const success = await register(username, email, password);
+    if (success) {
       setLocation("/login");
-    } catch (error) {
-      toast({
-        title: "Registration failed",
-        description: error instanceof Error ? error.message : "Please try again",
-        variant: "destructive",
-      });
     }
   };
 
@@ -66,10 +46,11 @@ export default function Register() {
         <div className="max-w-md mx-auto">
           <form onSubmit={handleSubmit} className="space-y-4">
             <div>
+              <label className="text-sm text-gray-400 mb-1 block">Username (will be used for login)</label>
               <Input
                 name="username"
                 type="text"
-                placeholder="Username"
+                placeholder="Choose a username"
                 value={username}
                 onChange={(e) => setUsername(e.target.value)}
                 required
@@ -97,9 +78,21 @@ export default function Register() {
                 required
                 className="w-full bg-gray-800 border-gray-700"
               />
+              <p className="text-xs text-gray-500 mt-1">Password must be at least 8 characters long</p>
             </div>
-            <Button className="w-full bg-purple-700 hover:bg-purple-600" type="submit">
-              Create Account
+            <Button 
+              className="w-full bg-purple-700 hover:bg-purple-600" 
+              type="submit"
+              disabled={isLoading}
+            >
+              {isLoading ? (
+                <>
+                  <i className="fas fa-circle-notch fa-spin mr-2"></i>
+                  Creating Account...
+                </>
+              ) : (
+                "Create Account"
+              )}
             </Button>
           </form>
 
@@ -112,6 +105,15 @@ export default function Register() {
             >
               Sign in
             </Button>
+          </div>
+          
+          <div className="mt-8 text-xs text-gray-500">
+            <p className="text-center">By creating an account, you agree to our</p>
+            <p className="text-center">
+              <Button variant="link" className="text-purple-400 hover:text-purple-300 p-0 h-auto text-xs">Terms of Service</Button>
+              {" and "}
+              <Button variant="link" className="text-purple-400 hover:text-purple-300 p-0 h-auto text-xs">Privacy Policy</Button>
+            </p>
           </div>
         </div>
       </main>

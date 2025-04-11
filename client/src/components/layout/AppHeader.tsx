@@ -26,6 +26,13 @@ export function AppHeader({
   const handleSearch = (e: React.FormEvent) => {
     e.preventDefault();
     onSearch(searchQuery);
+    
+    // Navigate to search page with query
+    if (searchQuery.trim()) {
+      setLocation(`/search/${encodeURIComponent(searchQuery)}`);
+    } else {
+      setLocation('/search');
+    }
   };
   
   const handleSearchInputChange = (e: React.ChangeEvent<HTMLInputElement>) => {

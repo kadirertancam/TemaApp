@@ -36,7 +36,12 @@ export default function Home() {
   };
   
   const handleSearch = (query: string) => {
-    setSearchQuery(query);
+    // If there's a search query, navigate to search page
+    if (query.trim()) {
+      setLocation(`/search/${encodeURIComponent(query)}`);
+    } else {
+      setSearchQuery("");
+    }
   };
   
   const handleFilter = (filters: FilterOptions) => {

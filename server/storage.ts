@@ -12,6 +12,7 @@ export interface IStorage {
   // User methods
   getUser(id: number): Promise<User | undefined>;
   getUserByUsername(username: string): Promise<User | undefined>;
+  getAllUsers(): Promise<User[]>;
   createUser(user: InsertUser): Promise<User>;
   
   // Category methods
@@ -171,6 +172,16 @@ export class DatabaseStorage implements IStorage {
       return undefined;
     }
   }
+  
+  async getAllUsers(): Promise<User[]> {
+    try {
+      const allUsers = await db.select().from(users);
+      return allUsers;
+    } catch (error) {
+      console.error("Error getting all users:", error);
+      return [];
+    }
+  }
 
   async createUser(insertUser: InsertUser): Promise<User> {
     try {
@@ -179,6 +190,201 @@ export class DatabaseStorage implements IStorage {
     } catch (error) {
       console.error("Error creating user:", error);
       throw error;
+    }
+  }
+
+  async updateUser(id: number, userData: Partial<User>): Promise<User> {
+    try {
+      const [user] = await db
+        .update(users)
+        .set(userData)
+        .where(eq(users.id, id))
+        .returning();
+      return user;
+    } catch (error) {
+      console.error("Error updating user:", error);
+      throw error;
+    }
+  }
+  
+  // User theme related methods
+  async getFavoriteThemes(userId: number): Promise<Theme[]> {
+    try {
+      // Get favorite theme IDs
+      const favorites = await db
+        .select()
+        .from(userFavorites)
+        .where(eq(userFavorites.userId, userId));
+      
+      if (favorites.length === 0) return [];
+      
+      // Get theme details for each favorite
+      const themeIds = favorites.map(fav => fav.themeId);
+      return this.getThemesByIds(themeIds);
+    } catch (error) {
+      console.error("Error getting favorite themes:", error);
+      return [];
+    }
+  }
+  
+  async addToFavorites(userId: number, themeId: number): Promise<void> {
+    try {
+      // Check if already in favorites
+      const existing = await db
+        .select()
+        .from(userFavorites)
+        .where(
+          and(
+            eq(userFavorites.userId, userId),
+            eq(userFavorites.themeId, themeId)
+          )
+        );
+      
+      if (existing.length === 0) {
+        await db.insert(userFavorites).values({
+          userId,
+          themeId,
+          createdAt: new Date()
+        });
+      }
+    } catch (error) {
+      console.error("Error adding to favorites:", error);
+      throw error;
+    }
+  }
+  
+  async removeFromFavorites(userId: number, themeId: number): Promise<void> {
+    try {
+      await db
+        .delete(userFavorites)
+        .where(
+          and(
+            eq(userFavorites.userId, userId),
+            eq(userFavorites.themeId, themeId)
+          )
+        );
+    } catch (error) {
+      console.error("Error removing from favorites:", error);
+      throw error;
+    }
+  }
+  
+  async getDownloadedThemes(userId: number): Promise<Theme[]> {
+    try {
+      // Get downloaded theme IDs
+      const downloads = await db
+        .select()
+        .from(userDownloads)
+        .where(eq(userDownloads.userId, userId));
+      
+      if (downloads.length === 0) return [];
+      
+      // Get theme details for each download
+      const themeIds = downloads.map(dl => dl.themeId);
+      return this.getThemesByIds(themeIds);
+    } catch (error) {
+      console.error("Error getting downloaded themes:", error);
+      return [];
+    }
+  }
+  
+  async recordDownload(userId: number, themeId: number): Promise<void> {
+    try {
+      // Check if already downloaded
+      const existing = await db
+        .select()
+        .from(userDownloads)
+        .where(
+          and(
+            eq(userDownloads.userId, userId),
+            eq(userDownloads.themeId, themeId)
+          )
+        );
+      
+      if (existing.length === 0) {
+        // Record the download
+        await db.insert(userDownloads).values({
+          userId,
+          themeId,
+          downloadDate: new Date()
+        });
+      }
+      
+      // Increment download count on theme
+      await db
+        .update(themes)
+        .set({
+          downloadCount: sql`${themes.downloadCount} + 1`
+        })
+        .where(eq(themes.id, themeId));
+    } catch (error) {
+      console.error("Error recording download:", error);
+      throw error;
+    }
+  }
+  
+  async getPurchasedThemes(userId: number): Promise<Theme[]> {
+    try {
+      // For demo purposes, return some themed as purchased
+      // In a real app, there would be a userPurchases table
+      
+      // Get premium themes (not free)
+      const premiumThemes = await db
+        .select()
+        .from(themes)
+        .where(eq(themes.isFree, false));
+      
+      // Randomly select some as purchased (for demo purposes)
+      return premiumThemes.filter((_, index) => index % 2 === 0);
+    } catch (error) {
+      console.error("Error getting purchased themes:", error);
+      return [];
+    }
+  }
+  
+  async purchaseTheme(userId: number, themeId: number): Promise<void> {
+    try {
+      // In a real app, we would record the purchase in a database
+      // For now, we'll just simulate a successful purchase
+      
+      // Automatically add the purchased theme to downloads as well
+      await this.recordDownload(userId, themeId);
+    } catch (error) {
+      console.error("Error purchasing theme:", error);
+      throw error;
+    }
+  }
+  
+  async getUserSubscription(userId: number): Promise<{ isPremium: boolean, expiryDate: string | null, plan: string | null }> {
+    try {
+      // Get user to check premium status
+      const user = await this.getUser(userId);
+      
+      if (!user || !user.isPremium) {
+        return {
+          isPremium: false,
+          expiryDate: null,
+          plan: null
+        };
+      }
+      
+      // For demo purposes, return premium info
+      // In a real app, this would come from a subscriptions table
+      const expiryDate = new Date();
+      expiryDate.setMonth(expiryDate.getMonth() + 12); // 1 year in the future
+      
+      return {
+        isPremium: true,
+        expiryDate: expiryDate.toISOString(),
+        plan: "Premium Annual"
+      };
+    } catch (error) {
+      console.error("Error getting user subscription:", error);
+      return {
+        isPremium: false,
+        expiryDate: null,
+        plan: null
+      };
     }
   }
   
